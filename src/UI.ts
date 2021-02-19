@@ -16,6 +16,8 @@ const BOARD_SIZE = {
 
 const ENTER_KEY = 'Enter';
 
+const MAX_TICKS_COUNT = 25;
+
 const node = (elType: keyof HTMLElementTagNameMap) => (
     props: Record<string, string>,
     children: Array<Node>
@@ -23,7 +25,7 @@ const node = (elType: keyof HTMLElementTagNameMap) => (
     const el = document.createElement(elType);
 
     Object.keys(props).map((name) => el.setAttribute(name, props[name]));
-    children.map(child => el.appendChild(child));
+    children.map((child) => el.appendChild(child));
 
     return el;
 };
@@ -40,9 +42,48 @@ const getSegmentEl = (width: number, height: number) => (
     return div({ class: 'segment', style: `width:${width}px` }, [
         div({ class: 'total' }, [text((segmentHeight + water).toFixed(3))]),
         div({ class: 'water', style: `height: ${water * height}px` }, []),
-        div({ class: 'ground', style: `height: ${segmentHeight * height}px` }, []),
-        div({ class: 'water-level' }, [text(water.toFixed(3))])
+        div(
+            { class: 'ground', style: `height: ${segmentHeight * height}px` },
+            []
+        ),
+        div({ class: 'water-level' }, [text(water.toFixed(3))]),
     ]);
+};
+
+const getFilteredList = (
+    count: number
+): { items: Array<number>; diff: number } => {
+    const diff = Math.ceil(count / MAX_TICKS_COUNT);
+
+    return {
+        diff,
+        items: Array(count)
+            .fill(0)
+            .map((_, i) => i)
+            .filter((value) => value % diff === 0),
+    };
+};
+
+const getRuler = (count: number, height: number) => {
+    const { items, diff } = getFilteredList(count);
+
+    return items.map((value) =>
+        div(
+            {
+                class: 'ruler-item',
+                style: `height:${height * diff}px`,
+            },
+            [div({ class: 'ruler-number' }, [text(value.toString())])]
+        )
+    );
+};
+
+const getLines = (count: number, height: number) => {
+    const { items, diff } = getFilteredList(count);
+
+    return items.map(() =>
+        div({ class: 'line', style: `height:${height * diff}px` }, [])
+    );
 };
 
 const getLandscapeEl = (landscape: Array<Segment>): HTMLElement => {
@@ -61,7 +102,7 @@ const getLandscapeEl = (landscape: Array<Segment>): HTMLElement => {
         );
     }
 
-    const heightLimit = Math.floor(1.3 * maxHeight);
+    const heightLimit = Math.ceil(1.3 * maxHeight);
     const segmentWidth = BOARD_SIZE.WIDTH / length;
     const segmentHeight = BOARD_SIZE.HEIGHT / heightLimit;
 
@@ -73,38 +114,10 @@ const getLandscapeEl = (landscape: Array<Segment>): HTMLElement => {
             style: `width: ${BOARD_SIZE.WIDTH}px; height: ${BOARD_SIZE.HEIGHT}px;`,
         },
         [
-            ...Array(heightLimit)
-                .fill(0)
-                .map(() =>
-                    div(
-                        { class: 'line', style: `height:${segmentHeight}px` },
-                        []
-                    )
-                ),
+            ...getLines(heightLimit, segmentHeight),
             div({ class: 'board' }, [
                 ...landscape.map(getSegmentElWithSize),
-                div(
-                    { class: 'ruler' },
-                    Array(heightLimit)
-                        .fill(0)
-                        .map((_, i) =>
-                            div(
-                                {
-                                    class: 'ruler-item',
-                                    style: `height:${segmentHeight}px`,
-                                },
-                                [
-                                    div(
-                                        {
-                                            class: 'ruler-number',
-                                            style: 'bottom:-10px',
-                                        },
-                                        [text(i.toString())]
-                                    ),
-                                ]
-                            )
-                        )
-                ),
+                div({ class: 'ruler' }, getRuler(heightLimit, segmentHeight)),
             ]),
         ]
     );
