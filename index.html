@@ -3,6 +3,10 @@
             margin: 0;
         }
 
+        .container {
+            padding: 20px;
+        }
+
         .empty {
             margin: 20px auto;
             border: 1px solid lightgray;
@@ -63,7 +67,7 @@
         }
 
         .water {
-            background: blue;
+            background: lightblue;
         }
 
         .ground {
@@ -89,4 +93,9 @@
 
         .result-msg {
             color: green;
-        }</style><script defer="defer" src="bundle.js"></script></head><body><div id="main"><div id="landscape"></div><div id="controls"><div><p>Please, provide the landscape in form of list with levels separated by comma</p><input id="landscapeEl" name="landscape"/> <input id="time" name="time"/> <button id="start">Calculate</button></div></div><div id="error" class="msg error-msg"></div><div id="result" class="msg result-msg"></div></div><script src="/bundle.js"></script></body></html>
+        }
+
+        .btn-random {
+            display: block;
+            margin: 20px 0;
+        }</style><script defer="defer" src="bundle.js"></script></head><body><div id="main" class="container"><div id="landscape"></div><div id="controls"><div><p>Please, provide the landscape in form of list with levels separated by comma</p><input id="landscapeEl" name="landscape"/> <input id="time" name="time"/> <button id="start">Calculate</button> <button id="startRandom" class="btn-random">I'm lucky</button></div></div><div id="error" class="msg error-msg"></div><div id="result" class="msg result-msg"></div></div><script src="/bundle.js"></script></body></html>
