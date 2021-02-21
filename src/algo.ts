@@ -4,6 +4,7 @@ const subtract = (a: number, b: number) => Number((a - b).toFixed(5));
 
 const WATER_PER_TIME = 1;
 
+// O(N)
 const getWhole = (landscape: Array<Segment>): number => {
     return landscape.reduce(
         (accum: number, { height, water }: Segment) => accum + height + water,
@@ -11,6 +12,7 @@ const getWhole = (landscape: Array<Segment>): number => {
     );
 };
 
+// O(N)
 const howMuch = (landscape: Array<Segment>, targetHeight: number): number => {
     return subtract(targetHeight * landscape.length, getWhole(landscape));
 };
@@ -35,9 +37,7 @@ const spreadWaterLevel = (landscape: Array<Segment>): Array<Segment> => {
         }));
     }
 
-    const highestSegments = landscape.filter(
-        ({ height }) => height === max
-    );
+    const highestSegments = landscape.filter(({ height }) => height === max);
 
     const maxWaterLevel = Math.max(
         ...highestSegments.map(({ water }) => water)
@@ -94,7 +94,10 @@ const spreadWaterLevel = (landscape: Array<Segment>): Array<Segment> => {
                     i === 0
                         ? {
                               height: v.height,
-                              water: subtract(v.water + maxWaterLevel, leftNeeded),
+                              water: subtract(
+                                  v.water + maxWaterLevel,
+                                  leftNeeded
+                              ),
                           }
                         : v
                 )
@@ -122,7 +125,10 @@ const spreadWaterLevel = (landscape: Array<Segment>): Array<Segment> => {
     ];
 };
 
-export const getWaterLevels = (landscape: Array<Segment>, time: number): Array<Segment> => {
+export const getWaterLevels = (
+    landscape: Array<Segment>,
+    time: number
+): Array<Segment> => {
     const diff = time * WATER_PER_TIME;
     return spreadWaterLevel(
         landscape.map(({ height, water }) => ({ height, water: water + diff }))
