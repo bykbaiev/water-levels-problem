@@ -152,16 +152,12 @@ const toTree = (
 };
 
 // O(N)
-const treeToArray = (tree: Tree | null): Array<IndexedHeight> => {
+const treeToArray = (tree: Tree | null): Array<number> => {
     if (!tree) {
         return [];
     }
 
-    return [
-        ...treeToArray(tree.left),
-        { height: tree.height, index: tree.index },
-        ...treeToArray(tree.right),
-    ];
+    return [...treeToArray(tree.left), tree.height, ...treeToArray(tree.right)];
 };
 
 // O(N)
@@ -174,7 +170,12 @@ const buildTree = (landscape: Array<number>): Tree => {
 
     const { index } = landscape.reduce(
         (accum, height, index) => {
-            if (height > accum.height) {
+            const leftNeighbourIndex = leftNeighbours[index].index;
+            const rightNeighbourIndex = rightNeighbours[index].index;
+            if (
+                height >= accum.height &&
+                (leftNeighbourIndex !== -1 || rightNeighbourIndex !== -1)
+            ) {
                 return {
                     index,
                     height,
@@ -215,7 +216,7 @@ const setHeight = (tree: Tree | null, height: number): Tree | null => {
 };
 
 // O(N)
-const fillWithWater = (
+const distributeWater = (
     tree: Tree | null,
     inflow: number,
     time: number
@@ -234,27 +235,45 @@ const fillWithWater = (
     const isRight = tree.isLeftChild === false;
     const isRoot = !tree.isLeftChild && !isRight;
 
+    const extraWater =
+        waterLevel +
+        waterAddedLeft +
+        waterAddedRight +
+        inflow -
+        tree.leftDeficit -
+        tree.rightDeficit;
+
     // ENOUGH FOR BOTH SUBTREES
 
-    if (
-        waterLevel + waterAddedLeft + waterAddedRight >=
-        tree.leftDeficit + tree.rightDeficit - inflow
-    ) {
+    if (extraWater >= 0) {
         return setHeight(
             tree,
-            tree.height +
-                (totalInflow +
-                    waterAddedRight +
-                    waterAddedLeft -
-                    tree.leftDeficit -
-                    tree.rightDeficit) /
-                    (tree.leftSquare + tree.rightSquare + 1)
+            tree.height + extraWater / (tree.leftSquare + tree.rightSquare + 1)
         );
+    }
+
+    const halfWaterLevel = waterLevel / 2;
+
+    // ONE SUBTREE IS EMPTY
+
+    if (!tree.left) {
+        return {
+            ...tree,
+            left: null,
+            right: distributeWater(tree.right, waterLevel + inflow, time),
+        };
+    }
+
+    if (!tree.right) {
+        return {
+            ...tree,
+            left: distributeWater(tree.left, waterLevel + inflow, time),
+            right: null,
+        };
     }
 
     // NOT ENOUGH
 
-    const halfWaterLevel = waterLevel / 2;
     const leftDeficitAfterRain =
         tree.leftDeficit - waterAddedLeft - halfWaterLevel;
     const rightDeficitAfterRain =
@@ -263,8 +282,8 @@ const fillWithWater = (
     if (isRoot && leftDeficitAfterRain >= 0 && rightDeficitAfterRain >= 0) {
         return {
             ...tree,
-            left: fillWithWater(tree.left, halfWaterLevel, time),
-            right: fillWithWater(tree.right, halfWaterLevel, time),
+            left: distributeWater(tree.left, halfWaterLevel, time),
+            right: distributeWater(tree.right, halfWaterLevel, time),
         };
     }
 
@@ -275,8 +294,8 @@ const fillWithWater = (
     ) {
         return {
             ...tree,
-            left: fillWithWater(tree.left, halfWaterLevel, time),
-            right: fillWithWater(tree.right, inflow + halfWaterLevel, time),
+            left: distributeWater(tree.left, halfWaterLevel, time),
+            right: distributeWater(tree.right, inflow + halfWaterLevel, time),
         };
     }
 
@@ -287,8 +306,8 @@ const fillWithWater = (
     ) {
         return {
             ...tree,
-            left: fillWithWater(tree.left, inflow + halfWaterLevel, time),
-            right: fillWithWater(tree.right, halfWaterLevel, time),
+            left: distributeWater(tree.left, inflow + halfWaterLevel, time),
+            right: distributeWater(tree.right, halfWaterLevel, time),
         };
     }
 
@@ -298,7 +317,7 @@ const fillWithWater = (
         return {
             ...tree,
             left: setHeight(tree.left, tree.height),
-            right: fillWithWater(
+            right: distributeWater(
                 tree.right,
                 waterLevel - (tree.leftDeficit - waterAddedLeft),
                 time
@@ -309,7 +328,7 @@ const fillWithWater = (
     if (isRoot && rightDeficitAfterRain < 0) {
         return {
             ...tree,
-            left: fillWithWater(
+            left: distributeWater(
                 tree.left,
                 waterLevel - (tree.rightDeficit - waterAddedRight),
                 time
@@ -322,7 +341,7 @@ const fillWithWater = (
         return {
             ...tree,
             left: setHeight(tree.left, tree.height),
-            right: fillWithWater(
+            right: distributeWater(
                 tree.right,
                 totalInflow - (tree.leftDeficit - waterAddedLeft),
                 time
@@ -333,7 +352,7 @@ const fillWithWater = (
     if (isLeft && rightDeficitAfterRain - inflow < 0) {
         return {
             ...tree,
-            left: fillWithWater(
+            left: distributeWater(
                 tree.left,
                 totalInflow - (tree.rightDeficit - waterAddedRight),
                 time
@@ -346,7 +365,7 @@ const fillWithWater = (
         return {
             ...tree,
             right: setHeight(tree.right, tree.height),
-            left: fillWithWater(
+            left: distributeWater(
                 tree.left,
                 totalInflow - (tree.rightDeficit - waterAddedRight),
                 time
@@ -357,7 +376,7 @@ const fillWithWater = (
     return {
         ...tree,
         left: setHeight(tree.left, tree.height),
-        right: fillWithWater(
+        right: distributeWater(
             tree.left,
             totalInflow - (tree.leftDeficit - waterAddedLeft),
             time
@@ -376,9 +395,9 @@ export const getWaterLevels = (
 
     const tree = buildTree(landscape);
 
-    const withWater = fillWithWater(tree, 0, time);
+    const landscapeAfterRain = distributeWater(tree, 0, time);
 
-    return treeToArray(withWater).map(
-        ({ height, index }) => height - landscape[index]
+    return treeToArray(landscapeAfterRain).map(
+        (height, index) => height - landscape[index]
     );
 };

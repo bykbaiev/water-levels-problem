@@ -1,13 +1,34 @@
+import data from './data';
 import {
     addListeners,
     renderLandscape,
     showErrorMsg,
     showResultMsg,
 } from './UI';
-
 import { getWaterLevels } from './tree';
 
-const onCalc = (heights: string, timeValue: string): void => {
+const calculateWaterLevels = (landscape: Array<number>, time: number): void => {
+    const waterLevels = getWaterLevels(landscape, time);
+
+    renderLandscape(
+        landscape.map((height, index) => ({
+            height,
+            water: waterLevels[index],
+        }))
+    );
+
+    showResultMsg(`
+    LANDSCAPE:${landscape.join(', ')}
+    <br/>
+    TIME:${time}
+    <br/>
+    WATER LEVELS: ${waterLevels
+        .map((level) => Number(level.toFixed(3)))
+        .join(', ')}
+    `);
+};
+
+const onStart = (heights: string, timeValue: string): void => {
     const landscape = heights.split(',').map((height) => parseFloat(height));
     const time = parseFloat(timeValue);
 
@@ -23,26 +44,15 @@ const onCalc = (heights: string, timeValue: string): void => {
         return;
     }
 
-    const waterLevels = getWaterLevels(landscape, time);
-
-    renderLandscape(
-        landscape.map((height, index) => ({
-            height,
-            water: waterLevels[index],
-        }))
-    );
-
-    showResultMsg(`
-    LANDSCAPE:${landscape.join(', ')}
-    <br/>
-    TIME:${timeValue}
-    <br/>
-    WATER LEVELS: ${waterLevels
-        .map((level) => Number(level.toFixed(3)))
-        .join(', ')}
-    `);
+    calculateWaterLevels(landscape, time);
 };
 
-addListeners(onCalc);
+const onStartRandom = () => {
+    const index = Math.round(Math.random() * data.length);
+    const { landscape, time } = data[index];
+    calculateWaterLevels(landscape, time);
+};
+
+addListeners(onStart, onStartRandom);
 
 renderLandscape([]);

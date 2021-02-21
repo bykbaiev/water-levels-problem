@@ -1,5 +1,4 @@
 import { Segment } from './model';
-import data from './data';
 
 const QUERY = {
     LANDSCAPE: '#landscape',
@@ -135,22 +134,17 @@ export const renderLandscape = (landscape: Array<Segment>): void => {
 };
 
 export const addListeners = (
-    onCalc: (heights: string, time: string) => void
+    onStart: (heights: string, time: string) => void,
+    onStartRandom: () => void
 ) => {
     const handler = () => {
         hideErrorMsg();
         hideResultMsg();
-        onCalc(
+        onStart(
             document.querySelector<HTMLInputElement>(QUERY.LANDSCAPE_INPUT)!
                 .value,
             document.querySelector<HTMLInputElement>(QUERY.TIME_INPUT)!.value
         );
-    };
-
-    const handleRandom = () => {
-        const index = Math.round(Math.random() * data.length);
-        const { landscape, time } = data[index];
-        onCalc(landscape.join(','), time.toString());
     };
 
     const keyPressHandler = (event: KeyboardEvent) => {
@@ -168,7 +162,7 @@ export const addListeners = (
         .addEventListener('keypress', keyPressHandler);
     document
         .querySelector(QUERY.START_RANDOM_BTN)!
-        .addEventListener('click', handleRandom);
+        .addEventListener('click', onStartRandom);
 };
 
 export const showErrorMsg = (msg: string): void => {
