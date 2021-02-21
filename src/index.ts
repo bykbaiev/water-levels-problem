@@ -5,7 +5,7 @@ import {
     showResultMsg,
 } from './UI';
 
-import { getTreeWaterLevels } from './tree';
+import { getWaterLevels } from './tree';
 
 const onCalc = (heights: string, timeValue: string): void => {
     const landscape = heights.split(',').map((height) => parseFloat(height));
@@ -23,7 +23,7 @@ const onCalc = (heights: string, timeValue: string): void => {
         return;
     }
 
-    const waterLevels = getTreeWaterLevels(landscape, time);
+    const waterLevels = getWaterLevels(landscape, time);
 
     renderLandscape(
         landscape.map((height, index) => ({
