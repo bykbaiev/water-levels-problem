@@ -174,7 +174,7 @@ const treeToArray = (
     ].sort((left, right) => left.index - right.index);
 };
 
-export const buildTree = (landscape: Array<number>): Tree => {
+const buildTree = (landscape: Array<number>): Tree => {
     const maxLeft = getMaxLeftNeighbourIndices(landscape);
     const maxRight = getMaxRightNeighbourIndices(landscape);
 
@@ -260,7 +260,7 @@ const fillWithWater1 = (
     const isRight = tree.isLeft === false;
     const isRoot = !tree.isLeft && !isRight;
 
-    const isEnoughtForRoot =
+    const isEnoughForRoot =
         isRoot &&
         time + waterAddedLeft + waterAddedRight >=
             tree.waterLeft + tree.waterRight;
@@ -277,7 +277,7 @@ const fillWithWater1 = (
 
     // ENOUGH FOR BOTH SUBTREES
 
-    if (isEnoughtForRoot || isEnoughForLeftChild || isEnoughForRightChild) {
+    if (isEnoughForRoot || isEnoughForLeftChild || isEnoughForRightChild) {
         return setHeight(
             tree,
             tree.height +

@@ -7,7 +7,7 @@ import {
 import { getWaterLevels } from './algo';
 import { Segment } from './model';
 
-import { buildTree, getTreeWaterLevels } from './tree';
+import { getTreeWaterLevels } from './tree';
 
 const onCalc = (heightsValue: string, timeValue: string): void => {
     const heights = heightsValue.split(',').map((height) => parseFloat(height));
