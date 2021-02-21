@@ -1,4 +1,7 @@
-import { Segment } from './model';
+type Segment = {
+    height: number;
+    water: number;
+};
 
 const QUERY = {
     LANDSCAPE: '#landscape',
