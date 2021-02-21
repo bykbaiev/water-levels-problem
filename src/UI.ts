@@ -1,4 +1,5 @@
 import { Segment } from './model';
+import data from './data';
 
 const QUERY = {
     LANDSCAPE: '#landscape',
@@ -7,6 +8,7 @@ const QUERY = {
     TIME_INPUT: '#time',
     ERROR_MSG: '#error',
     RESULT_MSG: '#result',
+    START_RANDOM_BTN: '#startRandom',
 };
 
 const BOARD_SIZE = {
@@ -34,19 +36,21 @@ const div = node('div');
 
 const text = (value: string) => document.createTextNode(value);
 
+const round = (value: number): string => Number(value.toFixed(3)).toString();
+
 const getSegmentEl = (width: number, height: number) => (
     segment: Segment
 ): HTMLElement => {
     const { height: segmentHeight, water } = segment;
 
     return div({ class: 'segment', style: `width:${width}px` }, [
-        div({ class: 'total' }, [text((segmentHeight + water).toFixed(3))]),
+        div({ class: 'total' }, [text(round(segmentHeight + water))]),
         div({ class: 'water', style: `height: ${water * height}px` }, []),
         div(
             { class: 'ground', style: `height: ${segmentHeight * height}px` },
             []
         ),
-        div({ class: 'water-level' }, [text(water.toFixed(3))]),
+        div({ class: 'water-level' }, [text(round(water))]),
     ]);
 };
 
@@ -143,6 +147,12 @@ export const addListeners = (
         );
     };
 
+    const handleRandom = () => {
+        const index = Math.round(Math.random() * data.length);
+        const { landscape, time } = data[index];
+        onCalc(landscape.join(','), time.toString());
+    };
+
     const keyPressHandler = (event: KeyboardEvent) => {
         if (event.key === ENTER_KEY) {
             handler();
@@ -156,6 +166,9 @@ export const addListeners = (
     document
         .querySelector(QUERY.TIME_INPUT)!
         .addEventListener('keypress', keyPressHandler);
+    document
+        .querySelector(QUERY.START_RANDOM_BTN)!
+        .addEventListener('click', handleRandom);
 };
 
 export const showErrorMsg = (msg: string): void => {

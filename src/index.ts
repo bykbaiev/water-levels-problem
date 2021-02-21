@@ -4,17 +4,14 @@ import {
     showErrorMsg,
     showResultMsg,
 } from './UI';
-import { getWaterLevels } from './algo';
-import { Segment } from './model';
-import data from './data';
 
 import { getTreeWaterLevels } from './tree';
 
-const onCalc = (heightsValue: string, timeValue: string): void => {
-    const heights = heightsValue.split(',').map((height) => parseFloat(height));
+const onCalc = (heights: string, timeValue: string): void => {
+    const landscape = heights.split(',').map((height) => parseFloat(height));
     const time = parseFloat(timeValue);
 
-    if (heights.some((height) => isNaN(height) || height < 0)) {
+    if (landscape.some((height) => isNaN(height) || height < 0)) {
         showErrorMsg(
             'There is invalid landscape: every segment should be valid positive number'
         );
@@ -26,63 +23,26 @@ const onCalc = (heightsValue: string, timeValue: string): void => {
         return;
     }
 
-    const landscape: Array<Segment> = heights.map((height) => ({
-        height,
-        water: 0,
-    }));
+    const waterLevels = getTreeWaterLevels(landscape, time);
 
-    const waterLevel = getWaterLevels(landscape, time);
+    renderLandscape(
+        landscape.map((height, index) => ({
+            height,
+            water: waterLevels[index],
+        }))
+    );
 
-    renderLandscape(waterLevel);
-
-    showResultMsg(waterLevel.map(({ water }) => water).join(','));
+    showResultMsg(`
+    LANDSCAPE:${landscape.join(', ')}
+    <br/>
+    TIME:${timeValue}
+    <br/>
+    WATER LEVELS: ${waterLevels
+        .map((level) => Number(level.toFixed(3)))
+        .join(', ')}
+    `);
 };
 
 addListeners(onCalc);
 
 renderLandscape([]);
-
-/* ---------------------------------------------- */
-const landscape = [4, 1, 1, 5, 2, 4, 9, 8, 7, 6, 8];
-
-console.log(landscape);
-
-console.log('tree', getTreeWaterLevels(landscape, 1));
-
-console.log(
-    'recursion',
-    getWaterLevels(
-        landscape.map((height) => ({ height, water: 0 })),
-        1
-    ).map(({ water }) => water)
-);
-
-const landscape1 = [1, 2, 3, 4, 1];
-
-console.log('----------------------------------------');
-
-console.log(landscape1);
-
-console.log('tree', getTreeWaterLevels(landscape1, 1));
-
-console.log(
-    'recursion',
-    getWaterLevels(
-        landscape1.map((height) => ({ height, water: 0 })),
-        1
-    ).map(({ water }) => water)
-);
-
-data.map(({ landscape, time, result }) => {
-    console.log('-------------------------------------');
-    console.log('landscape', landscape, time);
-    console.log('tree', getTreeWaterLevels(landscape, time));
-    console.log(
-        'recursion',
-        getWaterLevels(
-            landscape.map((height) => ({ height, water: 0 })),
-            time
-        ).map(({ water }) => water)
-    );
-    console.log('result', result);
-});

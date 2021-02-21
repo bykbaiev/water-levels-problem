@@ -10,6 +10,10 @@
             margin: 0;
         }
 
+        .container {
+            padding: 20px;
+        }
+
         .empty {
             margin: 20px auto;
             border: 1px solid lightgray;
@@ -97,11 +101,16 @@
         .result-msg {
             color: green;
         }
+
+        .btn-random {
+            display: block;
+            margin: 20px 0;
+        }
     </style>
 </head>
 
 <body>
-    <div id="main">
+    <div id="main" class="container">
         <div id="landscape">
             <!-- HERE WILL BE LANDSCAPE RENDERED -->
         </div>
@@ -111,6 +120,8 @@
                 <input id="landscapeEl" name="landscape" />
                 <input id="time" name="time" />
                 <button id="start">Calculate</button>
+
+                <button id="startRandom" class="btn-random">I'm lucky</button>
             </div>
         </div>
         <div id="error" class="msg error-msg"></div>
