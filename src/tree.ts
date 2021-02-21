@@ -1,5 +1,3 @@
-import { Segment } from './model';
-
 type Tree = {
     height: number;
     index: number;
@@ -20,35 +18,6 @@ type TreeData = Omit<
 const reverse = <T>(arr: Array<T>): Array<T> => {
     return arr.reduce((accum, item) => [item, ...accum], []);
 };
-
-const getMaxLeftNeighbourIndices = (arr: Array<number>): Array<number> => {
-    return arr.reduce(
-        (accum, height, index) => {
-            const indices = [...accum.indices, accum.maxIndex];
-
-            if (accum.maxHeight <= height) {
-                return {
-                    indices,
-                    maxHeight: height,
-                    maxIndex: index,
-                };
-            }
-
-            return {
-                ...accum,
-                indices,
-            };
-        },
-        { indices: [], maxIndex: -1, maxHeight: -1 }
-    ).indices;
-};
-
-const getMaxRightNeighbourIndices = (arr: Array<number>): Array<number> =>
-    reverse(
-        getMaxLeftNeighbourIndices(reverse(arr)).map((index) =>
-            index === -1 ? -1 : arr.length - index - 1
-        )
-    );
 
 const getLeftDeficites = (arr: Array<number>): Array<number> => {
     let stack = [[Infinity, -1]] as Array<[number, number]>;
@@ -84,7 +53,7 @@ const getRightDeficites = (arr: Array<number>): Array<number> =>
 const getNeighours = (
     arr: Array<number>,
     compare: (curr: number, prev: number) => boolean
-): Array<number> => {
+): Array<{ index: number; square: number }> => {
     const stack: Array<[number, number]> = [[Infinity, -1]];
 
     return arr.reduce((accum, item, index) => {
@@ -94,9 +63,16 @@ const getNeighours = (
             popped = <[number, number]>stack.pop();
         }
 
+        const neighbour = popped
+            ? {
+                  index: popped[1],
+                  square: index - stack[stack.length - 1][1] - 1,
+              }
+            : { index: -1, square: 0 };
+
         stack.push([item, index]);
 
-        return [...accum, popped ? popped[1] : -1];
+        return [...accum, neighbour];
     }, []);
 };
 
@@ -105,16 +81,24 @@ const getLeftNeighbours = (arr: Array<number>) =>
 
 const getRightNeigbours = (arr: Array<number>) =>
     reverse(
-        getNeighours(reverse(arr), (curr, prev) => curr > prev).map((index) =>
-            index === -1 ? -1 : arr.length - index - 1
+        getNeighours(
+            reverse(arr),
+            (curr, prev) => curr > prev
+        ).map((neighbour) =>
+            neighbour.index === -1
+                ? neighbour
+                : { ...neighbour, index: arr.length - neighbour.index - 1 }
         )
     );
 
 const toTree = (
     items: Array<TreeData>,
+    leftNeighbours: Array<{ index: number; square: number }>,
+    rightNeighbours: Array<{ index: number; square: number }>,
+    index: number,
     isLeft: boolean | null
 ): Tree | null => {
-    if (items.length === 0) {
+    if (items.length === 0 || index === -1) {
         return null;
     }
 
@@ -130,33 +114,25 @@ const toTree = (
         };
     }
 
-    // const heights = items.map(({ height }) => height);
-
-    // const leftNeighbours = getLeftNeighbours(heights);
-    // const rightNeighbours = getRightNeigbours(heights);
-
-    const maxIndex = items.reduce(
-        (accum, item, index) => {
-            if (item.height > accum.height) {
-                return {
-                    index,
-                    height: item.height,
-                };
-            }
-
-            return accum;
-        },
-        { index: -1, height: -1 }
-    ).index;
-    const max = items[maxIndex];
-
     return {
-        ...max,
+        ...items[index],
         isLeft,
-        left: toTree(items.slice(0, maxIndex), true),
-        right: toTree(items.slice(maxIndex + 1), false),
-        leftSquare: maxIndex,
-        rightSquare: items.length - maxIndex - 1,
+        leftSquare: leftNeighbours[index]?.square || 0,
+        rightSquare: rightNeighbours[index]?.square || 0,
+        left: toTree(
+            items,
+            leftNeighbours,
+            rightNeighbours,
+            leftNeighbours[index].index,
+            true
+        ),
+        right: toTree(
+            items,
+            leftNeighbours,
+            rightNeighbours,
+            rightNeighbours[index].index,
+            false
+        ),
     };
 };
 
@@ -174,12 +150,27 @@ const treeToArray = (
     ].sort((left, right) => left.index - right.index);
 };
 
+// O(N) - ?
 const buildTree = (landscape: Array<number>): Tree => {
-    const maxLeft = getMaxLeftNeighbourIndices(landscape);
-    const maxRight = getMaxRightNeighbourIndices(landscape);
-
     const lefts = getLeftDeficites(landscape);
     const rights = getRightDeficites(landscape);
+
+    const leftNeighbours = getLeftNeighbours(landscape);
+    const rightNeighbours = getRightNeigbours(landscape);
+
+    const { index } = landscape.reduce(
+        (accum, height, index) => {
+            if (height > accum.height) {
+                return {
+                    index,
+                    height,
+                };
+            }
+
+            return accum;
+        },
+        { index: -1, height: -1 }
+    );
 
     return <Tree>toTree(
         landscape.map((height, index) => ({
@@ -188,6 +179,9 @@ const buildTree = (landscape: Array<number>): Tree => {
             waterRight: rights[index],
             index,
         })),
+        leftNeighbours,
+        rightNeighbours,
+        index,
         null
     );
 };

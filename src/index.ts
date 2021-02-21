@@ -44,9 +44,12 @@ renderLandscape([]);
 /* ---------------------------------------------- */
 const landscape = [4, 1, 1, 5, 2, 4, 9, 8, 7, 6, 8];
 
-console.log(getTreeWaterLevels(landscape, 1));
+console.log(landscape);
+
+console.log('tree', getTreeWaterLevels(landscape, 1));
 
 console.log(
+    'recursion',
     getWaterLevels(
         landscape.map((height) => ({ height, water: 0 })),
         1
@@ -57,9 +60,12 @@ const landscape1 = [1, 2, 3, 4, 1];
 
 console.log('----------------------------------------');
 
-console.log(getTreeWaterLevels(landscape1, 1));
+console.log(landscape1);
+
+console.log('tree', getTreeWaterLevels(landscape1, 1));
 
 console.log(
+    'recursion',
     getWaterLevels(
         landscape1.map((height) => ({ height, water: 0 })),
         1
