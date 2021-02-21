@@ -6,6 +6,7 @@ import {
 } from './UI';
 import { getWaterLevels } from './algo';
 import { Segment } from './model';
+import data from './data';
 
 import { getTreeWaterLevels } from './tree';
 
@@ -71,3 +72,17 @@ console.log(
         1
     ).map(({ water }) => water)
 );
+
+data.map(({ landscape, time, result }) => {
+    console.log('-------------------------------------');
+    console.log('landscape', landscape, time);
+    console.log('tree', getTreeWaterLevels(landscape, time));
+    console.log(
+        'recursion',
+        getWaterLevels(
+            landscape.map((height) => ({ height, water: 0 })),
+            time
+        ).map(({ water }) => water)
+    );
+    console.log('result', result);
+});
