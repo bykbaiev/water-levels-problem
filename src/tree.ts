@@ -162,6 +162,23 @@ const treeToArray = (tree: Tree | null): Array<number> => {
 
 // O(N)
 const buildTree = (landscape: Array<number>): Tree => {
+    if (landscape.length === 1) {
+        const emptyNeighbours = [{ index: -1, square: 0 }];
+
+        return <Tree>toTree(
+            landscape.map((height, index) => ({
+                height,
+                leftDeficit: 0,
+                rightDeficit: 0,
+                index,
+            })),
+            emptyNeighbours,
+            emptyNeighbours,
+            0,
+            null
+        );
+    }
+
     const lefts = getLeftDeficites(landscape);
     const rights = getRightDeficites(landscape);
 

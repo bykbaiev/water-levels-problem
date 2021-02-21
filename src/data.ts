@@ -1,5 +1,20 @@
 export default [
     {
+        landscape: [1],
+        time: 1,
+        result: [1],
+    },
+    {
+        landscape: [2, 3],
+        time: 1,
+        result: [1.5, 0.5],
+    },
+    {
+        landscape: [3, 2],
+        time: 1,
+        result: [0.5, 1.5],
+    },
+    {
         landscape: [0, 0, 0, 0, 0],
         time: 1,
         result: [1, 1, 1, 1, 1],
